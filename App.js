@@ -29,6 +29,7 @@ import Rules from './Rules';
 import Scores from './Scores';
 import About from './About';
 import SideBar from './Sidebar';
+import ProtectedRoute from './ProtectedRoute';
 
 export default class App extends React.Component {
   state = { drawerOpen: false };
@@ -90,12 +91,12 @@ export default class App extends React.Component {
               { this.state.drawerOpen ? null :
                 <View>
                   <Switch>
-                    <Route exact path='/' component={Yahtzee} />
+                    <ProtectedRoute exact path='/' component={Yahtzee} />
+                    <ProtectedRoute exact path='/scores' component={Scores} />
                     <Route exact path='/login' component={Login} />
                     <Route exact path='/register' component={Register} />
                     <Route exact path='/about' component={About} />
                     <Route exact path='/rules' component={Rules} />
-                    <Route exact path='/scores' component={Scores} />
                   </Switch>
                 </View>
               }
