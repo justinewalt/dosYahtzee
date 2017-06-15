@@ -1,21 +1,23 @@
 import React from 'react';
 import { withRouter } from 'react-router-native';
-import {
-  Text,
-  Platform,
-  Dimensions,
-} from 'react-native';
+import { Text, Platform, Dimensions } from 'react-native';
 import { List, ListItem } from 'native-base';
-
 const deviceHeight = Dimensions.get('window').height;
 const deviceWidth = Dimensions.get('window').width;
+import { connect } from 'react-redux';
+import { logout } from './actions/auth';
 
-
-const navs = [
+const loggedOutNavs = [
   { name: 'Login', path: '/login' },
   { name: 'Register', path: '/register' },
+]
+
+const navs = [
   { name: 'About', path: '/about' },
   { name: 'Rules', path: '/rules' },
+]
+
+const loggedInNavs = [
   { name: 'Scores', path: '/scores' }
 ]
 
@@ -24,23 +26,39 @@ const navigate = (close, history, path) => {
   history.push(path);
 }
 
-const Sidebar =({ close, history }) => (
-  <List style={styles.drawer} >
-    { navs.map( (nav, i) => {
-      return (
-        <ListItem key={i} >
-          <Text
-            onPress={ () => navigate( close, history, nav.path ) }
-            style={styles.text}
-          >
-            {nav.name}
-          </Text>
-        </ListItem>
+const SideBar = ({ close, history, isAuthenticated, dispatch, user }) => {
+  let visibleNavs = isAuthenticated ? [{ name: 'Game', path: '/' }, ...navs, ...loggedInNavs] : [...loggedOutNavs, ...navs]
+  return (
+    <List style={styles.drawer}>
+      {visibleNavs.map((nav, i) => {
+        return (
+          <ListItem key={i}>
+            <Text
+              onPress={() => navigate(close, history, nav.path)}
+              style={styles.text}
+            >
+              {nav.name}
+            </Text>
+          </ListItem>
         )
       })
-    }
-  </List>
-)
+      }
+      {!isAuthenticated ? null :
+        <ListItem>
+          <Text
+            style={styles.text}
+            onPress={() => {
+              dispatch(logout(user))
+              history.push('/login')
+            }}
+          >
+            Logout
+          </Text>
+        </ListItem>
+      }
+    </List>
+  )
+}
 
 const styles = {
   drawer: {
@@ -51,6 +69,12 @@ const styles = {
   text: {
     fontWeight: (Platform.OS === 'ios') ? '500' : '400',
     fontSize: 16,
-  }
+  },
 }
-export default withRouter(Sidebar);
+
+const mapStateToProps = (state) => {
+  let isAuthenticated = Object.keys(state.user).length ? true : false;
+  return { isAuthenticated, user: state.user }
+}
+
+export default withRouter(connect(mapStateToProps)(SideBar));
